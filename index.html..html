@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Счастливого пути!</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;800&family=Nunito:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f6f3ea;--tx:#1d2a35;--road:#26323d;--sun:#ffc933;--ok:#1f9d6b;--no:#d9443a;--card:#fff;--line:#d9d4c4;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141b22;--tx:#f1eee4;--card:#1f2a34;--line:#34424f;color-scheme:dark}}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:500 17px/1.5 Nunito,system-ui,sans-serif}
+h1,h2,h3{font-family:Unbounded,system-ui,sans-serif;line-height:1.15;margin:0}
+.wrap{max-width:560px;margin:0 auto;padding:16px 16px 40px}
+.road{background:var(--road);border-radius:14px;height:46px;position:relative;margin:6px 0 22px;overflow:hidden}
+.road::before{content:"";position:absolute;left:0;right:0;top:50%;border-top:3px dashed #fff8;transform:translateY(-50%)}
+.bus{position:absolute;top:50%;left:0;font-size:28px;transform:translate(0,-50%);transition:left .6s ease}
+.stops{display:flex;justify-content:space-between;font-size:13px;margin:-14px 4px 18px;opacity:.7}
+.hero{background:var(--sun);color:#1d2a35;border-radius:20px;padding:26px 20px;margin-bottom:18px}
+.hero h1{font-size:30px;font-weight:800}
+.hero p{margin:10px 0 0;font-weight:700}
+.btn{display:inline-block;border:0;background:var(--road);color:#fff;font:700 17px Nunito,sans-serif;padding:14px 22px;border-radius:14px;cursor:pointer;margin-top:14px}
+.btn.sun{background:var(--sun);color:#1d2a35}
+.btn:focus-visible,.fact:focus-visible,.opt:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+h2{font-size:22px;font-weight:800;margin-bottom:6px}
+.sub{opacity:.75;margin:0 0 16px}
+.fact{display:block;width:100%;text-align:left;background:var(--card);border:2px solid var(--line);border-radius:16px;padding:14px 16px;margin-bottom:12px;font:inherit;color:inherit;cursor:pointer}
+.fact b{display:block}
+.fact .a{display:none;margin-top:8px;padding-top:8px;border-top:2px dashed var(--line)}
+.fact.open{border-color:var(--ok)}
+.fact.open .a{display:block}
+.fact .hint{font-size:14px;opacity:.6}
+.fact.open .hint{display:none}
+.opt{display:block;width:100%;text-align:left;background:var(--card);border:2px solid var(--line);border-radius:14px;padding:13px 15px;margin-bottom:10px;font:inherit;color:inherit;cursor:pointer}
+.opt.right{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 18%,var(--card))}
+.opt.wrong{border-color:var(--no);background:color-mix(in srgb,var(--no) 16%,var(--card))}
+.opt[disabled]{cursor:default}
+.why{min-height:24px;margin:10px 0 0;font-weight:700}
+.q-n{font-size:14px;opacity:.65;margin-bottom:6px}
+.score{font:800 64px Unbounded,sans-serif;margin:8px 0}
+.badge{font-size:64px}
+.bar{height:14px;border-radius:8px;background:var(--line);overflow:hidden;margin:4px 0 14px}.bar i{display:block;height:100%;background:var(--ok)}.bar i.mid{background:var(--sun)}.bar i.low{background:var(--no)}.pct{font:800 72px Unbounded,sans-serif;margin:6px 0}.row{display:flex;justify-content:space-between;font-weight:700}.btn.alt{background:transparent;color:var(--tx);border:2px solid var(--line);margin-left:8px}.hide{display:none}
+@media (prefers-reduced-motion:reduce){.bus{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="road" aria-hidden="true"><span class="bus" id="bus">🚗</span></div>
+  <div class="stops" aria-hidden="true"><span>Старт</span><span>Финиш</span></div>
+  <main id="app"></main>
+</div>
+<script>
+var STEPS=[
+{t:"Пешеход на дороге",e:"🚦",s:"Нажимай на карточки — узнай ответ",f:[
+["Можно ли переходить дорогу, глядя в телефон?","Нет. Наушники и экран отключают внимание: водителя не слышно и не видно. Телефон убираем до тротуара."],
+["Где безопаснее всего переходить?","По пешеходному переходу, когда машины остановились. Убедись, что водитель тебя заметил."],
+["Можно ли выбегать из-за стоящей машины?","Нет. Тебя не видно с дороги, а ты не видишь, что едет. Выходи только там, где обзор открыт."]]},
+{t:"На остановке",e:"🚏",s:"Остановка — это тоже дорога",f:[
+["Где ждать автобус?","На посадочной площадке, подальше от края. Не стоять на проезжей части и не бегать за уезжающим транспортом."],
+["Когда подходить к двери?","Когда транспорт полностью остановился. Пока он едет, двери не штурмуем."],
+["Кто заходит первым?","Сначала выходят пассажиры, потом заходишь ты. Так никто не толкается."]]},
+{t:"В транспорте",e:"🚌",s:"Тут проверяется воспитание",f:[
+["Кому уступать место?","Пожилым, людям с детьми, беременным, людям с инвалидностью и тем, кому плохо. Не только бабушкам."],
+["Что с рюкзаком?","Снять и поставить у ног. На спине он занимает место ещё одного пассажира."],
+["Как слушать музыку?","В наушниках и тихо. Громкий звук с телефона мешает всем вокруг."]]}
+];
+var TN=["Дорога","Остановка","Транспорт"];
+var QS=[
+["Что нужно сделать, прежде чем выйти на проезжую часть?",["Остановиться, посмотреть налево, потом направо и убедиться, что машины остановились","Быстро перебежать, пока нет машин","Достать телефон, чтобы не скучать"],0,"Убедись, что машины остановились и водитель тебя видит.",0],
+["Что нужно носить в тёмное время суток?",["Тёмную одежду","Светоотражающие элементы","Ничего особенного"],1,"Значки, браслеты и полоски на одежде заметны водителю издалека.",0],
+["Автобус остановился, у двери и выходящие, и ты. Что делаешь?",["Захожу первым, чтобы занять место","Захожу, не обращая внимания на других","Даю выйти пассажирам, потом захожу"],2,"Сначала выходят, потом заходят. Не толкаемся и не занимаем проход.",1],
+["Ты вышел из автобуса. Как перейти дорогу?",["Сразу перед автобусом","Дождаться, пока он уедет, и перейти там, где виден обзор","Обежать автобус сзади"],1,"Водитель не видит пешехода перед автобусом.",1],
+["Кому нужно уступать место в транспорте?",["Только пожилым людям","Тем, кто стоит рядом","Пожилым, людям с детьми, беременным, людям с инвалидностью и тем, кому плохо"],2,"Место уступаем всем, кому оно нужнее, а не только пожилым.",2]
+];
+var app=document.getElementById("app"),bus=document.getElementById("bus"),step=0,qi=0,score=0,tp=[0,0,0];
+function go(p){bus.style.left="calc("+p*100+"% - "+(p*34)+"px)"}
+function start(){step=0;go(0);app.innerHTML='<div class="hero"><h1>Счастливого пути!</h1><p>А знаете ли вы, что на дороге тоже есть этикет? Пройди тест из 5 вопросов и узнай, на сколько процентов ты знаешь правила пешехода.</p></div><button class="btn" id="tst">Начать тест</button>';
+document.getElementById("tst").onclick=function(){quiz(0,0)}}
+function stop(i){var d=STEPS[i];go((i+1)/4);var h='<h2>'+d.e+' '+d.t+'</h2><p class="sub">'+d.s+'</p>';
+d.f.forEach(function(f){h+='<button class="fact"><b>А знаете ли вы? '+f[0]+'</b><span class="hint">Нажми, чтобы узнать</span><span class="a">'+f[1]+'</span></button>'});
+h+='<button class="btn sun hide" id="nx">'+(i<2?"Дальше":"К тесту")+'</button>';app.innerHTML=h;
+var opened=0;[].forEach.call(app.querySelectorAll(".fact"),function(b){b.onclick=function(){if(!b.classList.contains("open")){b.classList.add("open");opened++;if(opened==3)document.getElementById("nx").classList.remove("hide")}}});
+document.getElementById("nx").onclick=function(){i<2?stop(i+1):quiz(0,0)}}
+function quiz(i,s){qi=i;score=s;if(i==0)tp=[0,0,0];go(i/QS.length);if(i>=QS.length)return end();var q=QS[i];
+var h='<div class="q-n">Вопрос '+(i+1)+' из '+QS.length+'</div><h2>'+q[0]+'</h2><div style="height:12px"></div>';
+q[1].forEach(function(o,k){h+='<button class="opt" data-k="'+k+'">'+o+'</button>'});
+h+='<p class="why" id="why" aria-live="polite"></p><button class="btn sun hide" id="nq">'+(i<QS.length-1?"Дальше":"Результат")+'</button>';app.innerHTML=h;
+var done=false;[].forEach.call(app.querySelectorAll(".opt"),function(b){b.onclick=function(){if(done)return;done=true;var k=+b.dataset.k,ok=k==q[2];if(ok){score++;tp[q[4]]++}
+[].forEach.call(app.querySelectorAll(".opt"),function(x){x.disabled=true;if(+x.dataset.k==q[2])x.classList.add("right")});if(!ok)b.classList.add("wrong");
+document.getElementById("why").textContent=(ok?"Верно! ":"Не совсем. ")+q[3];document.getElementById("nq").classList.remove("hide")}});
+document.getElementById("nq").onclick=function(){quiz(i+1,score)}}
+function cls(p){return p>=80?"":p>=50?"mid":"low"}
+function end(){var n=QS.length,p=Math.round(score/n*100),b,m;if(p>=80){b="🏆";m="Отлично! Ты усвоил материал и знаешь, как вести себя в пути."}else if(p>=50){b="👍";m="Неплохо. Повтори слабые темы, и будет идеально."}else{b="🚏";m="Пока рано в рейс. Перечитай правила и попробуй снова."}
+var weak=0,h='';for(var t=0;t<3;t++){if(tp[t]<tp[weak])weak=t;var tpp=Math.round(tp[t]/QS.filter(function(x){return x[4]==t}).length*100);h+='<div class="row"><span>'+TN[t]+'</span><span>'+tpp+'%</span></div><div class="bar"><i class="'+cls(tpp)+'" style="width:'+tpp+'%"></i></div>'}
+app.innerHTML='<div class="hero" style="text-align:center"><div class="badge">'+b+'</div><div class="pct">'+p+'%</div><p>Ты усвоил материал проекта на '+p+'%. '+m+'</p></div>'+h+'<p style="text-align:center;font-weight:700">Вежливость в дороге — это безопасность для всех. Счастливого пути!</p><div style="text-align:center"><button class="btn" id="re">Пройти заново</button></div>';
+document.getElementById("re").onclick=start}
+start();
+</script>
+</body>
+</html>
